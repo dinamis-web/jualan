@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js build
+.next/
+out/
+build/
+dist/
+
+# misc
+coverage/
+.DS_Store
+*.pem
+*.log
+
+# environment variables
+.env*
+!.env.example
+*.local
+
+# secrets and credentials
+secret/
+secrets/
+*.txt
+

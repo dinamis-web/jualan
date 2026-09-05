@@ -1,0 +1,6 @@
+{
+  "name": "DINAMIS MONEY",
+  "description": "Aplikasi pendongkrak penjualan mobile-first untuk menentukan target, mencari peluang hot, dan aksi nyata hari ini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
