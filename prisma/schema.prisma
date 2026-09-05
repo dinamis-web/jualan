@@ -1,0 +1,160 @@
+// Prisma schema for DINAMIS MONEY
+// Target Database: Supabase PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String?        @unique
+  name         String         @default("Sales Champion")
+  avatarUrl    String?
+  role         String         @default("owner")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  
+  businesses   Business[]
+  salesTargets SalesTarget[]
+  prospects    Prospect[]
+  dailyActions DailyAction[]
+  closings     Closing[]
+
+  @@map("users")
+}
+
+model Business {
+  id               String   @id @default(uuid())
+  userId           String?  @map("user_id")
+  productOrService String   @map("product_or_service")
+  avgSalePrice     Float    @default(100000) @map("avg_sale_price")
+  buyerPersona     String[] @default([]) @map("buyer_persona")
+  salesChannels    String[] @default([]) @map("sales_channels")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("businesses")
+}
+
+model SalesTarget {
+  id             String   @id @default(uuid())
+  userId         String?  @map("user_id")
+  monthName      String   @default("September") @map("month_name")
+  targetAmount   Float    @default(5000000) @map("target_amount")
+  achievedAmount Float    @default(0) @map("achieved_amount")
+  avgCommission  Float    @default(100000) @map("avg_commission")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sales_targets")
+}
+
+model Prospect {
+  id                 String   @id @default(uuid())
+  userId             String?  @map("user_id")
+  name               String
+  potential          Float    @default(0)
+  status             String   @default("Baru dikenal")
+  priority           String   @default("WARM") // 'HOT' | 'WARM' | 'COLD'
+  lastActivity       String   @default("Baru ditambahkan") @map("last_activity")
+  daysInactive       Int      @default(0) @map("days_inactive")
+  nextRecommendation String   @default("Hubungi sekarang") @map("next_recommendation")
+  phone              String?
+  notes              String?
+  isMoneyLeak        Boolean  @default(false) @map("is_money_leak")
+  leakReason         String?  @map("leak_reason")
+  resolved           Boolean  @default(false)
+  closed             Boolean  @default(false)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user     User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeline ProspectActivity[]
+  closings Closing[]
+
+  @@index([userId])
+  @@index([priority])
+  @@index([status])
+  @@map("prospects")
+}
+
+model ProspectActivity {
+  id         String   @id @default(uuid())
+  prospectId String   @map("prospect_id")
+  timeAgo    String   @default("Baru saja") @map("time_ago")
+  event      String
+  type       String   @default("NOTE") // 'NOTE' | 'CALL' | 'WHATSAPP' | 'PROPOSAL' | 'STATUS_CHANGE'
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  prospect Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  @@index([prospectId])
+  @@map("prospect_activities")
+}
+
+model DailyAction {
+  id                  String   @id @default(uuid())
+  userId              String?  @map("user_id")
+  code                String
+  title               String
+  label               String
+  completedCount      Int      @default(0) @map("completed_count")
+  targetCount         Int      @default(5) @map("target_count")
+  isCompleted         Boolean  @default(false) @map("is_completed")
+  detailTitle         String   @map("detail_title")
+  detailDesc          String   @map("detail_desc")
+  suggestedTemplate   String   @map("suggested_template")
+  defaultCustomerName String?  @map("default_customer_name")
+  date                String?  @default("Hari ini")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("daily_actions")
+}
+
+model Closing {
+  id               String   @id @default(uuid())
+  userId           String?  @map("user_id")
+  customerName     String   @map("customer_name")
+  saleAmount       Float    @default(0) @map("sale_amount")
+  profitCommission Float    @default(0) @map("profit_commission")
+  source           String   @default("Customer lama")
+  date             String   @default("Hari ini")
+  prospectId       String?  @map("prospect_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prospect Prospect? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([prospectId])
+  @@map("closings")
+}
+
+model Strategy {
+  id          String @id @default(uuid())
+  rank        Int
+  title       String
+  label       String
+  labelColor  String @map("label_color")
+  description String
+  iconKey     String @map("icon_key")
+  iconColor   String @map("icon_color")
+
+  @@map("strategies")
+}
